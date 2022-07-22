@@ -1,4 +1,4 @@
-const APIproduct = 'https://jsonplaceholder.typicode.com/posts';
+const APIproduct = 'http://localhost:3000/api/products/';
 
 const items = document.getElementById('items');
 
