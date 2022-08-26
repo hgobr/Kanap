@@ -1,3 +1,5 @@
+var notyf = new Notyf();
+
 const url = window.location.href;
 
 const productId = new URL(url).searchParams.get('id');
@@ -52,10 +54,10 @@ fetch('http://localhost:3000/api/products/' + productId).then((res) =>
       let sameProduct = false;
 
       if (selectColor.value == '') {
-        alert('Choississez une couleur');
+        notyf.error('Vous devez mettre une couleur');
       } else {
         if (quantity <= 0 || quantity > 100) {
-          alert('La quantitée dois etre comprise entre 1 et 100');
+          notyf.error('La quantitée dois etre comprise entre 1 et 100');
         } else {
           for (let data of dataPanier) {
             if (product.id == data.id && product.color == data.color) {
@@ -70,6 +72,7 @@ fetch('http://localhost:3000/api/products/' + productId).then((res) =>
           }
 
           localStorage.setItem('panier', JSON.stringify(dataPanier));
+          notyf.success('Le produit a bien été ajouté au panier');
         }
       }
     };
