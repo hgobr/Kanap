@@ -1,3 +1,5 @@
+var notyf = new Notyf();
+
 function getLocalStorage() {
   const data = localStorage.getItem('panier');
 
@@ -8,6 +10,7 @@ function getLocalStorage() {
   }
 }
 
+const ApiURL = 'http://localhost:3000/api/products/';
 const infoPanier = getLocalStorage();
 const cartItems = document.getElementById('cart__items');
 const totalQuantity = document.getElementById('totalQuantity');
@@ -23,10 +26,10 @@ if (infoPanier == []) {
 }
 
 for (let data of infoPanier) {
-  fetch('http://localhost:3000/api/products/' + data.id)
+  fetch(ApiURL + data.id)
     .then((res) => res.json())
     .then((product) => {
-      let dom = `<article class="cart__item" data-id="${data.id}" data-color="${data.color}">
+      let dom = `<article class="cart__item" id="${data.id}" color="${data.color}">
       <div class="cart__item__img">
         <img src="${product.imageUrl}" alt="${product.description}">
       </div>
@@ -56,3 +59,58 @@ for (let data of infoPanier) {
       totalPrice.textContent = totalPriceCmp;
     });
 }
+
+const quantityUpdate = () => {
+  let cart = getLocalStorage();
+
+  for (let info of cart) {
+    fetch(ApiURL + info.id)
+      .then((res) => res.json())
+      .then(() => {
+        document.querySelectorAll('.itemQuantity').forEach((updateQuantiy) => {
+          updateQuantiy.addEventListener('change', () => {
+            let article = updateQuantiy.closest('article');
+
+            if (updateQuantiy.value > 100 || updateQuantiy.value < 1) {
+              notyf.error('La quantitée dois être comprise entre 1 et 100');
+
+              return;
+            } else {
+              if (
+                article.id == info.id &&
+                article.getAttribute('color') == info.color
+              ) {
+                info.quantity = parseInt(updateQuantiy.value);
+                updateQuantiy.setAttribute('value', updateQuantiy.value);
+                localStorage.setItem('panier', JSON.stringify(cart));
+              }
+            }
+            updateTotalPrice();
+          });
+        });
+      });
+  }
+};
+
+const updateTotalPrice = () => {
+  let cart = getLocalStorage();
+
+  let quantity = 0;
+  let price = 0;
+
+  for (let info of cart) {
+    fetch(ApiURL + info.id)
+      .then((res) => res.json())
+      .then((data) => {
+        quantity += info.quantity;
+        price += data.price * info.quantity;
+        totalPrice.textContent = price;
+        totalQuantity.textContent = quantity;
+      });
+  }
+};
+
+const deleteItem = () => {};
+
+quantityUpdate();
+updateTotalPrice();
