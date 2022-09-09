@@ -1,4 +1,4 @@
-var notyf = new Notyf();
+let notyf = new Notyf();
 
 function getLocalStorage() {
   const data = localStorage.getItem('panier');
@@ -67,11 +67,11 @@ const quantityUpdate = () => {
     fetch(ApiURL + info.id)
       .then((res) => res.json())
       .then(() => {
-        document.querySelectorAll('.itemQuantity').forEach((updateQuantiy) => {
-          updateQuantiy.addEventListener('change', () => {
-            let article = updateQuantiy.closest('article');
+        document.querySelectorAll('.itemQuantity').forEach((updateQuantity) => {
+          updateQuantity.addEventListener('change', () => {
+            let article = updateQuantity.closest('article');
 
-            if (updateQuantiy.value > 100 || updateQuantiy.value < 1) {
+            if (updateQuantity.value > 100 || updateQuantity.value < 1) {
               notyf.error('La quantitée dois être comprise entre 1 et 100');
 
               return;
@@ -80,8 +80,8 @@ const quantityUpdate = () => {
                 article.id == info.id &&
                 article.getAttribute('color') == info.color
               ) {
-                info.quantity = parseInt(updateQuantiy.value);
-                updateQuantiy.setAttribute('value', updateQuantiy.value);
+                info.quantity = parseInt(updateQuantity.value);
+                updateQuantity.setAttribute('value', updateQuantity.value);
                 localStorage.setItem('panier', JSON.stringify(cart));
               }
             }
@@ -110,7 +110,133 @@ const updateTotalPrice = () => {
   }
 };
 
-const deleteItem = () => {};
+const deleteItem = () => {
+  let cart = getLocalStorage();
+
+  for (let info of cart) {
+    fetch(ApiURL + info.id).then((res) =>
+      res.json().then((data) => {
+        document.querySelectorAll('.deleteItem').forEach((deleteButton) => {
+          deleteButton.addEventListener('click', () => {
+            let article = deleteButton.closest('article');
+
+            cart = cart.filter(
+              (product) =>
+                product.id !== article.id ||
+                product.color !== article.getAttribute('color')
+            );
+
+            localStorage.setItem('panier', JSON.stringify(cart));
+            location.reload();
+          });
+        });
+      })
+    );
+  }
+};
+
+const validateForm = () => {
+  let firstName = document.getElementById('firstName');
+  let lastName = document.getElementById('lastName');
+  let address = document.getElementById('address');
+  let city = document.getElementById('city');
+  let email = document.getElementById('email');
+
+  const firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
+  const lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
+  const addressErrorMsg = document.getElementById('addressErrorMsg');
+  const cityErrorMsg = document.getElementById('cityErrorMsg');
+  const emailErrorMsg = document.getElementById('emailErrorMsg');
+
+  const regex = /^[a-zA-Z]{2,15}$/;
+  const regexAdress = /([0-9a-zA-Z,\. ]*) ?([0-9]{5}) ?([a-zA-Z]*)/;
+  const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
+  const orderButton = document.getElementById('order');
+
+  firstName.addEventListener('change', () => {
+    if (firstName.value.trim() === '' || !firstName.value.match(regex)) {
+      firstName.style.border = '2px solid red';
+
+      firstNameErrorMsg.textContent =
+        'Veuillez saisir un prénom valide (entre 2 et 25 caractères)';
+    } else {
+      firstName.style.border = '2px solid green';
+
+      firstNameErrorMsg.textContent = '';
+    }
+  });
+
+  lastName.addEventListener('change', () => {
+    if (lastName.value.trim() === '' || !lastName.value.match(regex)) {
+      lastName.style.border = '2px solid red';
+
+      lastNameErrorMsg.textContent =
+        'Veuillez saisir un nom valide (entre 2 et 25 caractères)';
+    } else {
+      lastName.style.border = '2px solid green';
+
+      lastNameErrorMsg.textContent = '';
+    }
+  });
+
+  city.addEventListener('change', () => {
+    if (city.value.trim() === '' || !city.value.match(regex)) {
+      city.style.border = '2px solid red';
+
+      cityErrorMsg.textContent = 'Veuillez saisir une ville valide';
+    } else {
+      city.style.border = '2px solid green';
+
+      cityErrorMsg.textContent = '';
+    }
+  });
+
+  address.addEventListener('change', () => {
+    if (address.value.trim() === '' || !address.value.match(regexAdress)) {
+      address.style.border = '2px solid red';
+
+      addressErrorMsg.textContent =
+        'Veuillez saisir une adresse valide (ex: 115 Avenue des Champs-Élysées 75008 Paris)';
+    } else {
+      address.style.border = '2px solid green';
+
+      addressErrorMsg.textContent = '';
+    }
+  });
+
+  email.addEventListener('change', () => {
+    if (email.value.trim() === '' || !email.value.match(regexEmail)) {
+      email.style.border = '2px solid red';
+
+      emailErrorMsg.textContent =
+        'Veuillez saisir une adresse mail valide (ex: hello@world.com)';
+    } else {
+      email.style.border = '2px solid green';
+
+      emailErrorMsg.textContent = '';
+    }
+  });
+
+  orderButton.addEventListener('click', () => {
+    if (
+      firstNameErrorMsg.textContent === '' &&
+      firstName.value.trim() !== '' &&
+      lastNameErrorMsg.textContent === '' &&
+      lastName.value.trim() !== '' &&
+      addressErrorMsg.textContent === '' &&
+      address.value.trim() !== '' &&
+      cityErrorMsg.textContent === '' &&
+      city.value.trim() !== '' &&
+      emailErrorMsg.textContent === '' &&
+      email.value.trim() !== ''
+    ) {
+      console.log('true');
+    }
+  });
+};
 
 quantityUpdate();
 updateTotalPrice();
+deleteItem();
+validateForm();

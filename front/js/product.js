@@ -1,4 +1,4 @@
-var notyf = new Notyf();
+let notyf = new Notyf();
 
 const url = window.location.href;
 
