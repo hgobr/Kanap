@@ -149,7 +149,7 @@ const validateForm = () => {
   const emailErrorMsg = document.getElementById('emailErrorMsg');
 
   const regex = /^[a-zA-Z]{2,15}$/;
-  const regexAdress = /([0-9a-zA-Z,\. ]*) ?([0-9]{5}) ?([a-zA-Z]*)/;
+  const regexAdress = /([0-9a-zA-Z,\. ]*)/;
   const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   const orderButton = document.getElementById('order');
@@ -218,8 +218,14 @@ const validateForm = () => {
     }
   });
 
-  orderButton.addEventListener('click', () => {
-    if (
+  orderButton.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    let cart = localStorage.getItem('panier');
+
+    if (cart === '[]') {
+      alert('Votre panier est vide');
+    } else if (
       firstNameErrorMsg.textContent === '' &&
       firstName.value.trim() !== '' &&
       lastNameErrorMsg.textContent === '' &&
@@ -231,7 +237,24 @@ const validateForm = () => {
       emailErrorMsg.textContent === '' &&
       email.value.trim() !== ''
     ) {
-      console.log('true');
+      let contact = {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        address: address.value,
+        city: city.value,
+        email: email.value,
+      };
+
+      let products = [];
+
+      getLocalStorage().forEach((product) => {
+        products.push(product.id);
+      });
+
+      let dataOrder = {
+        contact,
+        products,
+      };
     }
   });
 };
