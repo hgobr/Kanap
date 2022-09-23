@@ -60,38 +60,6 @@ for (let data of infoPanier) {
     });
 }
 
-const quantityUpdate = () => {
-  let cart = getLocalStorage();
-
-  for (let info of cart) {
-    fetch(ApiURL + info.id)
-      .then((res) => res.json())
-      .then(() => {
-        document.querySelectorAll('.itemQuantity').forEach((updateQuantity) => {
-          updateQuantity.addEventListener('change', () => {
-            let article = updateQuantity.closest('article');
-
-            if (updateQuantity.value > 100 || updateQuantity.value < 1) {
-              notyf.error('La quantitée dois être comprise entre 1 et 100');
-
-              return;
-            } else {
-              if (
-                article.id == info.id &&
-                article.getAttribute('color') == info.color
-              ) {
-                info.quantity = parseInt(updateQuantity.value);
-                updateQuantity.setAttribute('value', updateQuantity.value);
-                localStorage.setItem('panier', JSON.stringify(cart));
-              }
-            }
-            updateTotalPrice();
-          });
-        });
-      });
-  }
-};
-
 const updateTotalPrice = () => {
   let cart = getLocalStorage();
 
@@ -106,6 +74,36 @@ const updateTotalPrice = () => {
         price += data.price * info.quantity;
         totalPrice.textContent = price;
         totalQuantity.textContent = quantity;
+      });
+  }
+};
+
+const quantityUpdate = () => {
+  let cart = getLocalStorage();
+
+  for (let info of cart) {
+    fetch(ApiURL + info.id)
+      .then((res) => res.json())
+      .then(() => {
+        document.querySelectorAll('.itemQuantity').forEach((updateQuantity) => {
+          updateQuantity.addEventListener('change', () => {
+            let article = updateQuantity.closest('article');
+
+            if (updateQuantity.value > 100 || updateQuantity.value < 1) {
+              notyf.error('La quantitée dois être comprise entre 1 et 100');
+            } else {
+              if (
+                article.id == info.id &&
+                article.getAttribute('color') == info.color
+              ) {
+                info.quantity = parseInt(updateQuantity.value);
+                updateQuantity.setAttribute('value', updateQuantity.value);
+              }
+            }
+            localStorage.setItem('panier', JSON.stringify(cart));
+            updateTotalPrice();
+          });
+        });
       });
   }
 };
@@ -149,7 +147,7 @@ const validateForm = () => {
   const emailErrorMsg = document.getElementById('emailErrorMsg');
 
   const regex = /^[a-zA-Z]{2,15}$/;
-  const regexAdress = /([0-9a-zA-Z,\. ]*)/;
+  const regexAdress = /^(\d{2,5})([a-zA-Z,\. ]+$)/;
   const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   const orderButton = document.getElementById('order');
@@ -223,7 +221,7 @@ const validateForm = () => {
 
     let cart = localStorage.getItem('panier');
 
-    if (cart === '[]') {
+    if (cart === '[]' || cart === null) {
       alert('Votre panier est vide');
     } else if (
       firstNameErrorMsg.textContent === '' &&
@@ -247,14 +245,25 @@ const validateForm = () => {
 
       let products = [];
 
-      getLocalStorage().forEach((product) => {
-        products.push(product.id);
+      getLocalStorage().forEach((item) => {
+        products.push(item.id);
       });
 
-      let dataOrder = {
-        contact,
-        products,
-      };
+      fetch(ApiURL + 'order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+        body: JSON.stringify({ contact, products }),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          const orderId = json.orderId;
+
+          localStorage.clear();
+
+          window.location.href = 'confirmation.html?orderId=' + orderId;
+        });
     }
   });
 };
