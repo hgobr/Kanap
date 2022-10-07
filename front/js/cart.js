@@ -51,7 +51,78 @@ for (let data of infoPanier) {
       </div>
       </article>`;
 
-      cartItems.innerHTML += dom;
+      const cartItem = document.createElement('article');
+      cartItem.setAttribute('class', 'cart__item');
+      cartItem.setAttribute('id', data.id);
+      cartItem.setAttribute('color', data.color);
+
+      const cartItemImg = document.createElement('div');
+      cartItemImg.setAttribute('class', 'cart__item__img');
+
+      const ItemImg = document.createElement('img');
+      ItemImg.setAttribute('src', product.imageUrl, 'alt', product.description);
+
+      const cartItemContent = document.createElement('div');
+      cartItemContent.setAttribute('class', 'cart__item__content');
+
+      const cartItemContentDescription = document.createElement('div');
+      cartItemContentDescription.setAttribute(
+        'class',
+        'cart__item__content__description'
+      );
+
+      const itemName = document.createElement('h2');
+      itemName.textContent = product.name;
+
+      const itemColor = document.createElement('p');
+      itemColor.textContent = data.color;
+
+      const itemPrice = document.createElement('p');
+      itemPrice.textContent = product.price;
+
+      const cartItemContentSettings = document.createElement('div');
+      cartItemContentSettings.setAttribute(
+        'class',
+        'cart__item__content__settings'
+      );
+
+      const cartItemContentSettingsQuantity = document.createElement('div');
+      cartItemContentSettingsQuantity.setAttribute(
+        'class',
+        'cart__item__content__settings__quantity'
+      );
+
+      const settingsQuantity = document.createElement('p');
+      settingsQuantity.textContent = 'Qté :';
+
+      const settingsInput = document.createElement('input');
+      settingsInput.setAttribute('type', 'number');
+      settingsInput.setAttribute('class', 'itemQuantity');
+      settingsInput.setAttribute('name', 'itemQuantity');
+      settingsInput.setAttribute('min', '1');
+      settingsInput.setAttribute('max', '100');
+      settingsInput.setAttribute('value', data.quantity);
+
+      const deleteItem = document.createElement('div');
+      deleteItem.setAttribute('class', 'cart__item__content__settings__delete');
+
+      const deleteItemText = document.createElement('p');
+      deleteItemText.textContent = 'Supprimer';
+
+      cartItem.appendChild(cartItemImg);
+      cartItemImg.appendChild(ItemImg);
+      cartItem.appendChild(cartItemContent);
+      cartItemContent.appendChild(cartItemContentDescription);
+      cartItemContentDescription.appendChild(itemName, itemColor, itemPrice);
+      cartItemContent.appendChild(cartItemContentSettings);
+      cartItemContentSettings.appendChild(cartItemContentSettingsQuantity);
+      cartItemContentSettingsQuantity.appendChild(settingsQuantity);
+      cartItemContentSettingsQuantity.appendChild(settingsInput);
+      cartItemContentSettings.appendChild(deleteItem);
+      deleteItem.appendChild(deleteItemText);
+      cartItems.appendChild(cartItem);
+
+      // cartItems.innerHTML += dom;
       totalArticles += data.quantity;
       totalPriceCmp += data.quantity * product.price;
 
@@ -108,7 +179,7 @@ const quantityUpdate = () => {
   }
 };
 
-const deleteItem = () => {
+const deleteProduct = () => {
   let cart = getLocalStorage();
 
   for (let info of cart) {
@@ -146,8 +217,8 @@ const validateForm = () => {
   const cityErrorMsg = document.getElementById('cityErrorMsg');
   const emailErrorMsg = document.getElementById('emailErrorMsg');
 
-  const regex = /^[a-zA-Z]{2,15}$/;
-  const regexAdress = /^(\d{2,5})([a-zA-Z,\. ]+$)/;
+  const regex = /^[a-zA-Z]{2,15}[- ][a-zA-Z]{2,15}$/;
+  const regexAdress = /^(\d{1,5})([a-zA-Z,\. ]+$)/;
   const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   const orderButton = document.getElementById('order');
@@ -194,8 +265,7 @@ const validateForm = () => {
     if (address.value.trim() === '' || !address.value.match(regexAdress)) {
       address.style.border = '2px solid red';
 
-      addressErrorMsg.textContent =
-        'Veuillez saisir une adresse valide (ex: 115 Avenue des Champs-Élysées 75008 Paris)';
+      addressErrorMsg.textContent = 'Veuillez saisir une adresse valide';
     } else {
       address.style.border = '2px solid green';
 
@@ -270,5 +340,5 @@ const validateForm = () => {
 
 quantityUpdate();
 updateTotalPrice();
-deleteItem();
+deleteProduct();
 validateForm();
