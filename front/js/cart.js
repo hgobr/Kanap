@@ -19,38 +19,16 @@ const totalPrice = document.getElementById('totalPrice');
 let totalArticles = 0;
 let totalPriceCmp = 0;
 
-let h1 = document.querySelector('.cartAndFormContainer > h1');
+const cartTitle = document.querySelector('.cartAndFormContainer > h1');
 
-if (infoPanier == []) {
-  h1.textContent = 'Votre panier est vide';
+if (localStorage.getItem('panier') === '[]') {
+  cartTitle.textContent = 'Votre panier est vide';
 }
 
 for (let data of infoPanier) {
   fetch(ApiURL + data.id)
     .then((res) => res.json())
     .then((product) => {
-      // let dom = `<article class="cart__item" id="${data.id}" color="${data.color}">
-      // <div class="cart__item__img">
-      //   <img src="${product.imageUrl}" alt="${product.description}">
-      // </div>
-      // <div class="cart__item__content">
-      //   <div class="cart__item__content__description">
-      //     <h2>${product.name}</h2>
-      //     <p>${data.color}</p>
-      //     <p>${product.price},00 €</p>
-      //   </div>
-      //   <div class="cart__item__content__settings">
-      //     <div class="cart__item__content__settings__quantity">
-      //       <p>Qté :</p>
-      //       <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${data.quantity}">
-      //     </div>
-      //     <div class="cart__item__content__settings__delete">
-      //       <p class="deleteItem">Supprimer</p>
-      //     </div>
-      //   </div>
-      // </div>
-      // </article>`;
-
       const cartItem = document.createElement('article');
       cartItem.setAttribute('class', 'cart__item');
       cartItem.setAttribute('id', data.id);
@@ -60,7 +38,8 @@ for (let data of infoPanier) {
       cartItemImg.setAttribute('class', 'cart__item__img');
 
       const ItemImg = document.createElement('img');
-      ItemImg.setAttribute('src', product.imageUrl, 'alt', product.description);
+      ItemImg.setAttribute('src', product.imageUrl);
+      ItemImg.setAttribute('alt', product.description);
 
       const cartItemContent = document.createElement('div');
       cartItemContent.setAttribute('class', 'cart__item__content');
@@ -78,7 +57,7 @@ for (let data of infoPanier) {
       itemColor.textContent = data.color;
 
       const itemPrice = document.createElement('p');
-      itemPrice.textContent = product.price;
+      itemPrice.textContent = product.price + ',00 €';
 
       const cartItemContentSettings = document.createElement('div');
       cartItemContentSettings.setAttribute(
@@ -103,26 +82,31 @@ for (let data of infoPanier) {
       settingsInput.setAttribute('max', '100');
       settingsInput.setAttribute('value', data.quantity);
 
-      const deleteItem = document.createElement('div');
-      deleteItem.setAttribute('class', 'cart__item__content__settings__delete');
+      const settingsDeleteItem = document.createElement('div');
+      settingsDeleteItem.setAttribute(
+        'class',
+        'cart__item__content__settings__delete'
+      );
 
-      const deleteItemText = document.createElement('p');
-      deleteItemText.textContent = 'Supprimer';
+      const settingsDeleteItemText = document.createElement('p');
+      settingsDeleteItemText.setAttribute('class', 'deleteItem');
+      settingsDeleteItemText.textContent = 'Supprimer';
 
       cartItem.appendChild(cartItemImg);
       cartItemImg.appendChild(ItemImg);
       cartItem.appendChild(cartItemContent);
       cartItemContent.appendChild(cartItemContentDescription);
-      cartItemContentDescription.appendChild(itemName, itemColor, itemPrice);
+      cartItemContentDescription.appendChild(itemName);
+      cartItemContentDescription.appendChild(itemColor);
+      cartItemContentDescription.appendChild(itemPrice);
       cartItemContent.appendChild(cartItemContentSettings);
       cartItemContentSettings.appendChild(cartItemContentSettingsQuantity);
       cartItemContentSettingsQuantity.appendChild(settingsQuantity);
       cartItemContentSettingsQuantity.appendChild(settingsInput);
-      cartItemContentSettings.appendChild(deleteItem);
-      deleteItem.appendChild(deleteItemText);
+      cartItemContentSettings.appendChild(settingsDeleteItem);
+      settingsDeleteItem.appendChild(settingsDeleteItemText);
       cartItems.appendChild(cartItem);
 
-      // cartItems.innerHTML += dom;
       totalArticles += data.quantity;
       totalPriceCmp += data.quantity * product.price;
 
@@ -217,18 +201,18 @@ const validateForm = () => {
   const cityErrorMsg = document.getElementById('cityErrorMsg');
   const emailErrorMsg = document.getElementById('emailErrorMsg');
 
-  const regex = /^[a-zA-Z]{2,15}[- ][a-zA-Z]{2,15}$/;
-  const regexAdress = /^(\d{1,5})([a-zA-Z,\. ]+$)/;
+  const regexName = /^[a-z ,.'-]+$/i;
+  const regexCity = /^[a-z ,.'-]+$/i;
+  const regexAdress = /[A-Za-z0-9'\.\-\s\,]/;
   const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   const orderButton = document.getElementById('order');
 
   firstName.addEventListener('change', () => {
-    if (firstName.value.trim() === '' || !firstName.value.match(regex)) {
+    if (firstName.value.trim() === '' || !firstName.value.match(regexName)) {
       firstName.style.border = '2px solid red';
 
-      firstNameErrorMsg.textContent =
-        'Veuillez saisir un prénom valide (entre 2 et 25 caractères)';
+      firstNameErrorMsg.textContent = 'Veuillez saisir un prénom valide';
     } else {
       firstName.style.border = '2px solid green';
 
@@ -237,11 +221,10 @@ const validateForm = () => {
   });
 
   lastName.addEventListener('change', () => {
-    if (lastName.value.trim() === '' || !lastName.value.match(regex)) {
+    if (lastName.value.trim() === '' || !lastName.value.match(regexName)) {
       lastName.style.border = '2px solid red';
 
-      lastNameErrorMsg.textContent =
-        'Veuillez saisir un nom valide (entre 2 et 25 caractères)';
+      lastNameErrorMsg.textContent = 'Veuillez saisir un nom valide';
     } else {
       lastName.style.border = '2px solid green';
 
@@ -250,7 +233,7 @@ const validateForm = () => {
   });
 
   city.addEventListener('change', () => {
-    if (city.value.trim() === '' || !city.value.match(regex)) {
+    if (city.value.trim() === '' || !city.value.match(regexCity)) {
       city.style.border = '2px solid red';
 
       cityErrorMsg.textContent = 'Veuillez saisir une ville valide';
@@ -277,8 +260,7 @@ const validateForm = () => {
     if (email.value.trim() === '' || !email.value.match(regexEmail)) {
       email.style.border = '2px solid red';
 
-      emailErrorMsg.textContent =
-        'Veuillez saisir une adresse mail valide (ex: hello@world.com)';
+      emailErrorMsg.textContent = 'Veuillez saisir une adresse mail valide';
     } else {
       email.style.border = '2px solid green';
 
